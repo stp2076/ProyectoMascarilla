@@ -8,14 +8,14 @@ import io, base64
 app = Flask(__name__)
 
 # Carga del modelo
-model = tf.keras.models.load_model("model.h5")
+model = tf.keras.models.load_model("modelo.h5")
 
 # Diccionario de etiquetas
 class_names = ['with_mask', 'mask_weared_incorrect', 'without_mask']
 
 @app.route('/')
 def home():
-    return "Servidor activo ✅"
+    return "Servidor activo"
 
 @app.route('/predict', methods=['POST'])
 def predict():
