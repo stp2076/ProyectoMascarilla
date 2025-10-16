@@ -36,10 +36,10 @@ def predict():
         result = np.argmax(pred)
         label = class_names[result]
 
-        return jsonify({'prediction': int(result), 'label': label})
+        return str(result).strip()
 
     except Exception as e:
-        return jsonify({'error': str(e)})
+        return str(e)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
