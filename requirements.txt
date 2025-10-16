@@ -1,8 +1,6 @@
 flask
+flask-cors
 tensorflow
-keras
-numpy
-pandas
 pillow
-scikit-learn
+numpy
 gunicorn
