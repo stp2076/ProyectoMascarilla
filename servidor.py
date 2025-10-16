@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import tensorflow as tf
 from tensorflow.keras.preprocessing import image
 import numpy as np
@@ -6,6 +7,7 @@ from PIL import Image
 import io, base64
 
 app = Flask(__name__)
+CORS(app)  # Habilitar CORS para que la web pueda hacer requests
 
 # Carga del modelo
 model = tf.keras.models.load_model("modelo.h5")
@@ -20,13 +22,14 @@ def home():
 @app.route('/predict', methods=['POST'])
 def predict():
     try:
-        # Recibir datos base64
-        data = request.data.decode('utf-8')
-        image_data = base64.b64decode(data)
+        # Recibir JSON con la imagen en Base64
+        data = request.get_json()
+        image_b64 = data['image']
+        image_data = base64.b64decode(image_b64)
         img = Image.open(io.BytesIO(image_data))
-        
+
         # Preprocesar imagen
-        img = img.resize((300, 300))  # el tamaño que usaste en el modelo
+        img = img.resize((300, 300))  # tamaño esperado por el modelo
         x = image.img_to_array(img)
         x = np.expand_dims(x, axis=0)
         x = x / 255.0  # normalización si tu modelo la usa
@@ -36,10 +39,11 @@ def predict():
         result = np.argmax(pred)
         label = class_names[result]
 
-        return str(result).strip()
+        # Devolver JSON
+        return jsonify({"prediction": label})
 
     except Exception as e:
-        return str(e)
+        return jsonify({"error": str(e)})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
