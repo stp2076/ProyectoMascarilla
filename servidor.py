@@ -1,42 +1,45 @@
 from flask import Flask, request, jsonify
-from tensorflow import keras
+import tensorflow as tf
 from tensorflow.keras.preprocessing import image
 import numpy as np
-import io
 from PIL import Image
-
-# Cargar el modelo entrenado
-model = keras.models.load_model("modelo.h5")
-
-# Clases en el mismo orden del entrenamiento
-class_names = ['with_mask', 'mask_weared_incorrect', 'without_mask']
+import io, base64
 
 app = Flask(__name__)
 
-@app.route("/")
+# Carga del modelo
+model = tf.keras.models.load_model("model.h5")
+
+# Diccionario de etiquetas
+class_names = ['with_mask', 'mask_weared_incorrect', 'without_mask']
+
+@app.route('/')
 def home():
-    return "Hola"
+    return "Servidor activo ✅"
 
-@app.route("/predict", methods=["POST"])
+@app.route('/predict', methods=['POST'])
 def predict():
-    # Verificar que se envió una imagen
-    if "file" not in request.files:
-        return jsonify({"error": "No se envió ninguna imagen"}), 400
+    try:
+        # Recibir datos base64
+        data = request.data.decode('utf-8')
+        image_data = base64.b64decode(data)
+        img = Image.open(io.BytesIO(image_data))
+        
+        # Preprocesar imagen
+        img = img.resize((300, 300))  # el tamaño que usaste en el modelo
+        x = image.img_to_array(img)
+        x = np.expand_dims(x, axis=0)
+        x = x / 255.0  # normalización si tu modelo la usa
 
-    file = request.files["file"]
-    img = Image.open(io.BytesIO(file.read())).resize((300, 300))
+        # Predicción
+        pred = model.predict(x)
+        result = np.argmax(pred)
+        label = class_names[result]
 
-    # Convertir a array y normalizar
-    x = image.img_to_array(img)
-    x = np.expand_dims(x, axis=0)
-    x = x / 255.0
+        return jsonify({'prediction': int(result), 'label': label})
 
-    # Predicción
-    prediction = model.predict(x)
-    predicted_class = np.argmax(prediction, axis=1)[0]
-    label = class_names[predicted_class]
+    except Exception as e:
+        return jsonify({'error': str(e)})
 
-    return jsonify({"prediction": label})
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
