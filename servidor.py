@@ -27,12 +27,13 @@ def predict():
         image_b64 = data['image']
         image_data = base64.b64decode(image_b64)
         img = Image.open(io.BytesIO(image_data))
+        img = img.convert('RGB')
 
-        # Preprocesar imagen
-        img = img.resize((300, 300))  # tamaño esperado por el modelo
+        # Preprocesar imagen   
+        img = img.resize((128, 128))  # tamaño esperado por el modelo
         x = image.img_to_array(img)
         x = np.expand_dims(x, axis=0)
-        x = x / 255.0  # normalización si tu modelo la usa
+        x = x / 255  # normalización si tu modelo la usa
 
         # Predicción
         pred = model.predict(x)
