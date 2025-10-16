@@ -13,7 +13,7 @@ CORS(app)  # Habilitar CORS para que la web pueda hacer requests
 model = tf.keras.models.load_model("modelo.h5")
 
 # Diccionario de etiquetas
-class_names = ['with_mask', 'mask_weared_incorrect', 'without_mask']
+class_names = ['mask_weared_incorrect', 'with_mask', 'without_mask']
 
 @app.route('/')
 def home():
